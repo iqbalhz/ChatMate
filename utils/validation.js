@@ -1,4 +1,5 @@
 const logger = require('./logger');
+const { messageTemplates } = require('../config/messages');
 
 /**
  * Parse payment command from message text
@@ -51,7 +52,7 @@ function validateAmount(amount) {
         if (typeof amount !== 'number' || isNaN(amount)) {
             return {
                 isValid: false,
-                error: '❌ Jumlah pembayaran harus berupa angka.\n\nContoh: bayar 50000'
+                error: messageTemplates.validation.invalidNumber
             };
         }
 
@@ -59,7 +60,7 @@ function validateAmount(amount) {
         if (!Number.isInteger(amount)) {
             return {
                 isValid: false,
-                error: '❌ Jumlah pembayaran harus berupa bilangan bulat.\n\nContoh: bayar 75000'
+                error: messageTemplates.validation.invalidInteger
             };
         }
 
@@ -67,7 +68,7 @@ function validateAmount(amount) {
         if (amount < MIN_AMOUNT) {
             return {
                 isValid: false,
-                error: `❌ Jumlah pembayaran minimal adalah Rp ${MIN_AMOUNT.toLocaleString('id-ID')}.\n\nContoh: bayar ${MIN_AMOUNT}`
+                error: messageTemplates.validation.belowMinimum(MIN_AMOUNT)
             };
         }
 
@@ -75,7 +76,7 @@ function validateAmount(amount) {
         if (amount > MAX_AMOUNT) {
             return {
                 isValid: false,
-                error: `❌ Jumlah pembayaran maksimal adalah Rp ${MAX_AMOUNT.toLocaleString('id-ID')}.\n\nContoh: bayar ${MAX_AMOUNT}`
+                error: messageTemplates.validation.aboveMaximum(MAX_AMOUNT)
             };
         }
 
@@ -89,7 +90,7 @@ function validateAmount(amount) {
         logger.error('Error validating amount:', error);
         return {
             isValid: false,
-            error: '❌ Terjadi kesalahan dalam validasi jumlah pembayaran. Silakan coba lagi.'
+            error: messageTemplates.validation.validationError
         };
     }
 }

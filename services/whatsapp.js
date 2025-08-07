@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const { formatHelpMessage, formatErrorMessage } = require('../config/messages');
 
 class WhatsAppService {
     constructor(client) {
@@ -16,26 +17,12 @@ class WhatsAppService {
     }
 
     async sendHelpMessage(chatId) {
-        const helpMessage = `🤖 *WhatsApp QRIS Bot*\n\n` +
-                          `Untuk melakukan pembayaran, gunakan format:\n` +
-                          `*bayar [jumlah]*\n\n` +
-                          `Contoh:\n` +
-                          `• bayar 50000\n` +
-                          `• bayar 150000\n` +
-                          `• bayar 1000000\n\n` +
-                          `📝 *Ketentuan:*\n` +
-                          `• Jumlah minimal: Rp 1.000\n` +
-                          `• Jumlah maksimal: Rp 10.000.000\n` +
-                          `• Hanya angka, tanpa titik atau koma\n\n` +
-                          `💡 Bot akan mengirimkan QR code QRIS untuk pembayaran`;
-
+        const helpMessage = formatHelpMessage();
         await this.sendMessage(chatId, helpMessage);
     }
 
     async sendErrorMessage(chatId, errorMessage) {
-        const formattedError = `❌ *Error*\n\n${errorMessage}\n\n` +
-                              `Ketik "bayar" untuk melihat panduan penggunaan.`;
-        
+        const formattedError = formatErrorMessage(errorMessage);
         await this.sendMessage(chatId, formattedError);
     }
 

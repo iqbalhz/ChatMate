@@ -6,6 +6,7 @@ const QrisService = require('./services/qris');
 const { validateAmount, parsePaymentCommand } = require('./utils/validation');
 const logger = require('./utils/logger');
 const config = require('./config/config');
+const { formatPaymentMessage } = require('./config/messages');
 
 class WhatsAppBot {
     constructor() {
@@ -130,10 +131,7 @@ class WhatsAppBot {
             const media = new MessageMedia('image/png', base64Data, 'qris_payment.png');
             
             // Send QR code with payment details
-            const paymentMessage = `💳 *QRIS Pembayaran*\n\n` +
-                                 `💰 Jumlah: Rp ${validation.amount.toLocaleString('id-ID')}\n` +
-                                 `📱 Scan QR code di bawah ini untuk melakukan pembayaran\n\n` +
-                                 `⚠️ *Catatan:* QR code ini adalah contoh untuk demonstrasi`;
+            const paymentMessage = formatPaymentMessage(validation.amount);
 
             await this.client.sendMessage(message.from, media, { caption: paymentMessage });
             
