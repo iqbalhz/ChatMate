@@ -62,12 +62,23 @@ class WhatsAppBot {
     setupEventHandlers() {
         this.client.on('qr', (qr) => {
             logger.info('QR RECEIVED, scan with your phone to log in');
-            QRCode.toString(qr, { type: 'terminal' }, (err, url) => {
+            console.log('\n=== WhatsApp Authentication QR Code ===');
+            QRCode.toString(qr, { 
+                type: 'terminal',
+                small: true,
+                width: 40
+            }, (err, url) => {
                 if (err) {
                     logger.error('Error generating QR code for terminal:', err);
                     return;
                 }
                 console.log(url);
+                console.log('\nScan this QR code with WhatsApp on your phone:');
+                console.log('1. Open WhatsApp on your phone');
+                console.log('2. Go to Settings → Linked Devices');
+                console.log('3. Tap "Link a Device"');
+                console.log('4. Scan the QR code above');
+                console.log('=========================================\n');
             });
         });
 
