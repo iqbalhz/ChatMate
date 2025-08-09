@@ -59,8 +59,20 @@ The application follows a service-oriented architecture with clear separation of
 - **Node.js**: JavaScript runtime environment
 - **Chrome/Chromium**: Required by Puppeteer for WhatsApp Web automation
 
-### Potential Integrations
-- **Payment Gateway**: Ready for integration with Indonesian payment processors
+### Ready for Payment Gateway Integration
+- **Current Status**: Demo QRIS generation with example merchant data
+- **Integration Points**: 
+  - Update merchant credentials in `config/config.js`
+  - Add payment gateway API calls in `services/qris.js`
+  - Implement payment status callbacks
+- **Supported Gateways**: Midtrans, Xendit, DOKU, OVO Business, GoPay Business, LinkAja Business
+- **Next Steps**: 
+  1. Choose payment gateway provider
+  2. Register merchant account
+  3. Replace example credentials with real merchant data
+  4. Add payment processing API integration
+
+### Additional Integration Options
 - **Database**: Architecture supports adding transaction logging and user management
 - **Monitoring Services**: Logging structure compatible with external monitoring solutions
 - **Authentication Services**: Merchant authentication system can be integrated for multi-tenant usage
