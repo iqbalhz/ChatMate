@@ -62,24 +62,38 @@ class WhatsAppBot {
     setupEventHandlers() {
         this.client.on('qr', (qr) => {
             logger.info('QR RECEIVED, scan with your phone to log in');
-            console.log('\n=== WhatsApp Authentication QR Code ===');
+            console.log('\n=== WhatsApp QR Code ===');
+            
+            // Generate very small QR code for small screens
             QRCode.toString(qr, { 
                 type: 'terminal',
                 small: true,
-                width: 40
-            }, (err, url) => {
+                width: 25
+            }, (err, smallQR) => {
                 if (err) {
-                    logger.error('Error generating QR code for terminal:', err);
-                    return;
+                    logger.error('Error generating small QR code:', err);
+                } else {
+                    console.log(smallQR);
                 }
-                console.log(url);
-                console.log('\nScan this QR code with WhatsApp on your phone:');
-                console.log('1. Open WhatsApp on your phone');
-                console.log('2. Go to Settings → Linked Devices');
-                console.log('3. Tap "Link a Device"');
-                console.log('4. Scan the QR code above');
-                console.log('=========================================\n');
             });
+
+            // Also save QR as PNG file for easier scanning
+            QRCode.toFile('./whatsapp_qr.png', qr, {
+                width: 300,
+                margin: 2
+            }, (err) => {
+                if (err) {
+                    logger.error('Error saving QR code file:', err);
+                } else {
+                    console.log('\nQR code also saved as: whatsapp_qr.png');
+                }
+            });
+
+            console.log('\nHow to connect:');
+            console.log('1. Open WhatsApp on phone');
+            console.log('2. Settings → Linked Devices');
+            console.log('3. Scan QR code above');
+            console.log('========================\n');
         });
 
         this.client.on('ready', () => {
