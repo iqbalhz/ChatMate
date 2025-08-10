@@ -19,7 +19,86 @@ A Node.js WhatsApp bot that generates QRIS (Quick Response Indonesian Standard) 
 - **Chrome/Chromium browser** (for WhatsApp Web automation)
 - **WhatsApp account** for bot authentication
 
+### WSL2 Setup (Windows Users)
+
+If you're running this on Windows Subsystem for Linux (WSL2), follow these additional steps:
+
+#### 1. Install Node.js in WSL2
+```bash
+# Update package list
+sudo apt update
+
+# Install Node.js and npm
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version
+npm --version
+```
+
+#### 2. Install Chrome/Chromium in WSL2
+```bash
+# Install required dependencies
+sudo apt update
+sudo apt install -y wget gnupg
+
+# Add Google Chrome repository
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+
+# Install Google Chrome
+sudo apt update
+sudo apt install -y google-chrome-stable
+
+# Alternative: Install Chromium (lighter option)
+# sudo apt install -y chromium-browser
+```
+
+#### 3. Install Additional Dependencies for WSL2
+```bash
+# Install required libraries for headless Chrome
+sudo apt install -y \
+  ca-certificates \
+  fonts-liberation \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libc6 \
+  libcairo2 \
+  libcups2 \
+  libdbus-1-3 \
+  libexpat1 \
+  libfontconfig1 \
+  libgbm1 \
+  libgcc1 \
+  libglib2.0-0 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libpango-1.0-0 \
+  libpangocairo-1.0-0 \
+  libstdc++6 \
+  libx11-6 \
+  libx11-xcb1 \
+  libxcb1 \
+  libxcomposite1 \
+  libxcursor1 \
+  libxdamage1 \
+  libxext6 \
+  libxfixes3 \
+  libxi6 \
+  libxrandr2 \
+  libxrender1 \
+  libxss1 \
+  libxtst6 \
+  lsb-release \
+  wget \
+  xdg-utils
+
 ### Installation
+
+#### Standard Installation (Windows/Mac/Linux)
 
 1. **Clone the repository**
    ```bash
@@ -37,10 +116,39 @@ A Node.js WhatsApp bot that generates QRIS (Quick Response Indonesian Standard) 
    node index.js
    ```
 
-4. **Authenticate with WhatsApp**
-   - A QR code will appear in your terminal
-   - Scan it with WhatsApp on your phone (Settings > Linked Devices)
-   - Wait for "WhatsApp client is ready!" message
+#### WSL2 Installation (Windows with WSL2)
+
+1. **Open WSL2 terminal** (Ubuntu/Debian recommended)
+
+2. **Complete WSL2 setup steps** (see Prerequisites section above)
+
+3. **Clone the repository in WSL2**
+   ```bash
+   # Navigate to your preferred directory
+   cd ~
+   
+   # Clone the repository
+   git clone https://github.com/yourusername/whatsapp-qris-bot.git
+   cd whatsapp-qris-bot
+   ```
+
+4. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+5. **Start the bot**
+   ```bash
+   # WSL2 requires specific Chrome flags
+   node index.js
+   ```
+
+### Authentication
+
+**For all platforms (including WSL2):**
+- A QR code will appear in your terminal
+- Scan it with WhatsApp on your phone (Settings > Linked Devices)
+- Wait for "WhatsApp client is ready!" message
 
 ## Usage
 
@@ -170,6 +278,36 @@ The bot includes comprehensive logging:
 - Ensure Chrome/Chromium is installed
 - Check terminal for error messages
 - Restart the bot: `Ctrl+C` then `node index.js`
+
+**WSL2 Specific Issues:**
+
+**Chrome/Puppeteer errors in WSL2:**
+```bash
+# If you get Chrome launch errors, try:
+export DISPLAY=:0
+export CHROME_BIN=/usr/bin/google-chrome-stable
+
+# Or set these in your ~/.bashrc for permanent fix:
+echo 'export DISPLAY=:0' >> ~/.bashrc
+echo 'export CHROME_BIN=/usr/bin/google-chrome-stable' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Permission issues in WSL2:**
+```bash
+# Fix Chrome sandbox issues
+sudo chmod 4755 /usr/bin/google-chrome-stable
+# or run with --no-sandbox flag (handled automatically by the bot)
+```
+
+**Memory issues in WSL2:**
+```bash
+# Increase WSL2 memory limit (edit .wslconfig in Windows)
+# Create C:\Users\<username>\.wslconfig with:
+[wsl2]
+memory=4GB
+processors=2
+```
 
 **Bot not responding:**
 - Verify WhatsApp authentication
