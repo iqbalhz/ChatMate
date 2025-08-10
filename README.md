@@ -19,40 +19,45 @@ A Node.js WhatsApp bot that generates QRIS (Quick Response Indonesian Standard) 
 - **Chrome/Chromium browser** (for WhatsApp Web automation)
 - **WhatsApp account** for bot authentication
 
-### WSL2 Setup (Windows Users)
+### WSL2 Setup (Windows Users - Ubuntu 24.04)
 
-If you're running this on Windows Subsystem for Linux (WSL2), follow these additional steps:
+If you're running this on Windows Subsystem for Linux (WSL2) with Ubuntu 24.04, follow these additional steps:
 
-#### 1. Install Node.js in WSL2
+#### 1. Install Node.js in WSL2 Ubuntu 24.04
 ```bash
 # Update package list
-sudo apt update
+sudo apt update && sudo apt upgrade -y
 
-# Install Node.js and npm
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# Install Node.js 20.x (recommended for Ubuntu 24.04)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # Verify installation
 node --version
 npm --version
+
+# Install build essentials (required for native modules)
+sudo apt install -y build-essential
 ```
 
-#### 2. Install Chrome/Chromium in WSL2
+#### 2. Install Chrome in WSL2 Ubuntu 24.04
 ```bash
 # Install required dependencies
-sudo apt update
 sudo apt install -y wget gnupg
 
-# Add Google Chrome repository
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+# Add Google Chrome repository (updated method for Ubuntu 24.04)
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
 
 # Install Google Chrome
 sudo apt update
 sudo apt install -y google-chrome-stable
 
-# Alternative: Install Chromium (lighter option)
+# Alternative: Install Chromium from Ubuntu repositories
 # sudo apt install -y chromium-browser
+
+# Verify Chrome installation
+google-chrome --version
 ```
 
 #### 3. Install Additional Dependencies for WSL2
@@ -281,16 +286,21 @@ The bot includes comprehensive logging:
 
 **WSL2 Specific Issues:**
 
-**Chrome/Puppeteer errors in WSL2:**
+**Chrome/Puppeteer errors in WSL2 Ubuntu 24.04:**
 ```bash
-# If you get Chrome launch errors, try:
+# Set environment variables for Chrome in WSL2
 export DISPLAY=:0
 export CHROME_BIN=/usr/bin/google-chrome-stable
 
-# Or set these in your ~/.bashrc for permanent fix:
+# For permanent fix, add to ~/.bashrc:
 echo 'export DISPLAY=:0' >> ~/.bashrc
 echo 'export CHROME_BIN=/usr/bin/google-chrome-stable' >> ~/.bashrc
 source ~/.bashrc
+
+# If Chrome still fails to launch, try alternative approach:
+sudo apt install -y xvfb
+export DISPLAY=:99
+Xvfb :99 -screen 0 1024x768x24 &
 ```
 
 **Permission issues in WSL2:**
