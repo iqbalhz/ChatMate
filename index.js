@@ -10,17 +10,19 @@ const { formatPaymentMessage } = require('./config/messages');
 
 class WhatsAppBot {
     constructor() {
-        // Try to find chromium executable path dynamically
-        let chromiumPath = null;
-        try {
-            chromiumPath = execSync('which chromium', { encoding: 'utf8' }).trim();
-        } catch (error) {
-            logger.warn('Could not find chromium with which command, using bundled version');
-        }
+        // Detect Chrome/Chromium executable for different environments
+        let chromiumPath = this.findChromiumExecutable();
+        
+        logger.info('Starting WhatsApp Bot...');
+        logger.info(`Using Chrome executable: ${chromiumPath || 'bundled'}`);
+        
+        // Detect WSL2 environment
+        const isWSL = process.env.WSL_DISTRO_NAME || process.platform === 'linux';
+        logger.info(`Environment detected: ${isWSL ? 'WSL2/Linux' : 'Standard'}`);
 
         this.client = new Client({
             authStrategy: new LocalAuth(),
-            puppeteer: chromiumPath ? {
+            puppeteer: {
                 headless: true,
                 executablePath: chromiumPath,
                 args: [
@@ -31,25 +33,31 @@ class WhatsAppBot {
                     '--disable-background-timer-throttling',
                     '--disable-backgrounding-occluded-windows',
                     '--disable-renderer-backgrounding',
-                    '--disable-features=TranslateUI',
+                    '--disable-features=TranslateUI,VizDisplayCompositor',
                     '--disable-ipc-flooding-protection',
                     '--no-first-run',
                     '--disable-gpu',
                     '--disable-extensions',
                     '--disable-default-apps',
                     '--no-default-browser-check',
-                    '--disable-web-security'
-                ]
-            } : {
-                headless: true,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--no-first-run',
-                    '--disable-gpu'
-                ]
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor',
+                    '--single-process', // Important for WSL2
+                    '--no-zygote', // Important for WSL2
+                    '--disable-blink-features=AutomationControlled',
+                    ...(isWSL ? [
+                        '--disable-software-rasterizer',
+                        '--disable-background-networking',
+                        '--disable-background-processes',
+                        '--disable-client-side-phishing-detection',
+                        '--disable-sync',
+                        '--metrics-recording-only',
+                        '--disable-hang-monitor',
+                        '--disable-prompt-on-repost',
+                        '--disable-domain-reliability'
+                    ] : [])
+                ],
+                timeout: 60000 // Increase timeout for WSL2
             }
         });
         
@@ -57,6 +65,44 @@ class WhatsAppBot {
         this.qrisService = new QrisService();
         
         this.setupEventHandlers();
+    }
+
+    findChromiumExecutable() {
+        const possiblePaths = [
+            '/usr/bin/google-chrome-stable',
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/chromium',
+            '/snap/bin/chromium',
+            process.env.CHROME_BIN,
+            process.env.GOOGLE_CHROME_BIN
+        ];
+
+        for (const path of possiblePaths) {
+            if (path) {
+                try {
+                    execSync(`test -x "${path}"`, { stdio: 'ignore' });
+                    logger.info(`Found Chrome executable: ${path}`);
+                    return path;
+                } catch (error) {
+                    // Continue checking other paths
+                }
+            }
+        }
+
+        // Try using 'which' command
+        try {
+            const chromiumPath = execSync('which google-chrome-stable || which google-chrome || which chromium-browser || which chromium', { encoding: 'utf8' }).trim();
+            if (chromiumPath) {
+                logger.info(`Found Chrome via which: ${chromiumPath}`);
+                return chromiumPath;
+            }
+        } catch (error) {
+            logger.warn('Could not find Chrome executable with which command');
+        }
+
+        logger.warn('Using bundled Chromium (may cause issues in WSL2)');
+        return null;
     }
 
     setupEventHandlers() {
@@ -98,6 +144,8 @@ class WhatsAppBot {
 
         this.client.on('ready', () => {
             logger.info('WhatsApp bot is ready!');
+            console.log('\n✅ Bot is connected and ready to receive messages!');
+            console.log('Send "bayar 50000" to test payment QR generation\n');
         });
 
         this.client.on('message', async (message) => {
@@ -111,10 +159,18 @@ class WhatsAppBot {
 
         this.client.on('disconnected', (reason) => {
             logger.warn('Client was logged out:', reason);
+            console.log('\n❌ WhatsApp disconnected. Reason:', reason);
         });
 
         this.client.on('auth_failure', (msg) => {
             logger.error('Authentication failure:', msg);
+            console.log('\n❌ Authentication failed:', msg);
+            console.log('Please scan the QR code again with your phone\n');
+        });
+
+        this.client.on('loading_screen', (percent, message) => {
+            logger.info(`Loading... ${percent}% - ${message}`);
+            console.log(`Loading... ${percent}% - ${message}`);
         });
     }
 

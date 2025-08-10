@@ -286,22 +286,61 @@ The bot includes comprehensive logging:
 
 **WSL2 Specific Issues:**
 
-**Chrome/Puppeteer errors in WSL2 Ubuntu 24.04:**
-```bash
-# Set environment variables for Chrome in WSL2
-export DISPLAY=:0
-export CHROME_BIN=/usr/bin/google-chrome-stable
+**Bot just shows "Starting WhatsApp Bot..." and hangs:**
 
-# For permanent fix, add to ~/.bashrc:
-echo 'export DISPLAY=:0' >> ~/.bashrc
-echo 'export CHROME_BIN=/usr/bin/google-chrome-stable' >> ~/.bashrc
-source ~/.bashrc
+1. **Run the diagnostic tool first:**
+   ```bash
+   node wsl2-diagnostic.js
+   ```
 
-# If Chrome still fails to launch, try alternative approach:
-sudo apt install -y xvfb
-export DISPLAY=:99
-Xvfb :99 -screen 0 1024x768x24 &
-```
+2. **Quick WSL2 fixes:**
+   ```bash
+   # Set required environment variables
+   export DISPLAY=:0
+   export CHROME_BIN=/usr/bin/google-chrome-stable
+   
+   # Make permanent
+   echo 'export DISPLAY=:0' >> ~/.bashrc
+   echo 'export CHROME_BIN=/usr/bin/google-chrome-stable' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+3. **If Chrome launch fails, use virtual display:**
+   ```bash
+   # Install virtual display server
+   sudo apt install -y xvfb
+   
+   # Start virtual display
+   Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+   export DISPLAY=:99
+   
+   # Now try running the bot
+   node index.js
+   ```
+
+4. **Chrome permissions fix:**
+   ```bash
+   # Fix Chrome executable permissions
+   sudo chmod +x /usr/bin/google-chrome-stable
+   
+   # Clear any existing Chrome processes
+   pkill -f chrome
+   pkill -f chromium
+   ```
+
+5. **Memory issues:**
+   ```bash
+   # Increase WSL2 memory (Windows side)
+   # Edit C:\Users\<username>\.wslconfig:
+   [wsl2]
+   memory=4GB
+   processors=2
+   
+   # Restart WSL2
+   # Run in Windows PowerShell:
+   # wsl --shutdown
+   # wsl
+   ```
 
 **Permission issues in WSL2:**
 ```bash
